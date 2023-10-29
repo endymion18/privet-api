@@ -4,3 +4,8 @@ class UserAlreadyExists(Exception):
 
 class InvalidPassword(Exception):
     pass
+
+
+class AlreadyVerified(Exception):
+    pass
+

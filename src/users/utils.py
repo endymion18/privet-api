@@ -1,3 +1,8 @@
+import os
+import random
+import smtplib
+from email.message import EmailMessage
+
 from passlib.context import CryptContext
 
 from email_validator import validate_email
@@ -8,7 +13,14 @@ from src.users.exceptions import *
 from src.users.models import User
 from src.users.schemas import UserRegister
 
+# constants
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+numbers = "0123456789"
+
+email_from = os.environ.get("EMAIL_ADDRESS_FROM")
+email_password = os.environ.get("EMAIL_PASSWORD")
 
 
 async def validate_user(user_data: UserRegister, session: AsyncSession):
@@ -37,3 +49,26 @@ async def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
 
+async def generate_confirmation_token() -> str:
+    result_str = ''.join(random.choice(numbers) for i in range(8))
+    return result_str
+
+
+async def send_email(email_to: str, token: str):
+    msg = EmailMessage()
+    msg['Subject'] = 'Mail confirmation'
+    msg['From'] = email_from
+    msg['To'] = email_to
+
+    msg.set_content(token)
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        server.login(email_from, email_password)
+        server.send_message(msg)
+
+
+async def check_verification(email: str, session: AsyncSession):
+    stmt = await session.execute(select(User.email_verified).where(User.email == email))
+    if stmt.scalar():
+        print(stmt)
+        raise AlreadyVerified("User already verified")
