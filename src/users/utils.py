@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.users.exceptions import *
 from src.users.models import User
-from src.users.schemas import UserRegister
+from src.users.schemas import UserRegister, UserLogin
 
 # constants
 
@@ -70,5 +70,18 @@ async def send_email(email_to: str, token: str):
 async def check_verification(email: str, session: AsyncSession):
     stmt = await session.execute(select(User.email_verified).where(User.email == email))
     if stmt.scalar():
-        print(stmt)
         raise AlreadyVerified("User already verified")
+
+
+async def verify_user(email: str, password: str, session: AsyncSession):
+    email_from_db = await session.execute(select(User.email).where(User.email == email))
+    if email_from_db.scalar() is None:
+        raise WrongEmail("This user does not exist")
+
+    is_user_verified = await session.execute(select(User.email_verified).where(User.email == email))
+    if not is_user_verified.scalar():
+        raise NotVerified("This user is not verified")
+
+    hashed_password = await session.execute(select(User.hashed_password).where(User.email == email))
+    if not pwd_context.verify(password, hashed_password.scalar()):
+        raise WrongPassword("Password is incorrect")
