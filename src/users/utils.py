@@ -1,17 +1,24 @@
 import os
 import random
 import smtplib
+
 from email.message import EmailMessage
 
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
+
 from passlib.context import CryptContext
+
+from jose import jwt
 
 from email_validator import validate_email
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.database import get_async_session
 from src.users.exceptions import *
 from src.users.models import User
-from src.users.schemas import UserRegister, UserLogin
+from src.users.schemas import UserRegister
 
 # constants
 
@@ -21,6 +28,9 @@ numbers = "0123456789"
 
 email_from = os.environ.get("EMAIL_ADDRESS_FROM")
 email_password = os.environ.get("EMAIL_PASSWORD")
+secret_key = os.environ.get("SECRET_KEY")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login", scheme_name="JWT")
 
 
 async def validate_user(user_data: UserRegister, session: AsyncSession):
@@ -85,3 +95,15 @@ async def verify_user(email: str, password: str, session: AsyncSession):
     hashed_password = await session.execute(select(User.hashed_password).where(User.email == email))
     if not pwd_context.verify(password, hashed_password.scalar()):
         raise WrongPassword("Password is incorrect")
+
+
+async def encode_jwt_token(data: dict):
+    jwt_token = jwt.encode(data, secret_key, "HS256")
+    return jwt_token
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_async_session)):
+    decoded_token = jwt.decode(token, secret_key, ["HS256"])
+    email = decoded_token.get("sub")
+    stmt = await session.execute(select(User).where(User.email == email))
+    return stmt.scalar()
