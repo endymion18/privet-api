@@ -23,3 +23,11 @@ class Role(Base):
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
     name: Mapped[str] = mapped_column(String(length=25), nullable=False)
+
+
+class Token(Base):
+    __tablename__ = "token"
+
+    id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
+    email: Mapped[str] = mapped_column(ForeignKey("user.email"))
+    token: Mapped[str] = mapped_column(String(length=6))
