@@ -20,3 +20,7 @@ class WrongEmail(Exception):
 
 class WrongPassword(Exception):
     pass
+
+
+class WrongToken(Exception):
+    pass

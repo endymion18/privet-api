@@ -50,17 +50,17 @@ async def hash_password(password: str) -> str:
 
 
 async def generate_confirmation_token() -> str:
-    result_str = ''.join(random.choice(numbers) for i in range(8))
+    result_str = ''.join(random.choice(numbers) for i in range(6))
     return result_str
 
 
-async def send_email(email_to: str, token: str):
+async def send_email(email_to: str, text: str):
     msg = EmailMessage()
     msg['Subject'] = 'Mail confirmation'
     msg['From'] = email_from
     msg['To'] = email_to
 
-    msg.set_content(token)
+    msg.set_content(text)
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
         server.login(email_from, email_password)
