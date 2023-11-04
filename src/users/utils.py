@@ -99,13 +99,13 @@ async def verify_user(email: str, password: str, session: AsyncSession):
     if email_from_db.scalar() is None:
         raise WrongEmail("This user does not exist")
 
-    is_user_verified = await session.execute(select(User.email_verified).where(User.email == email))
-    if not is_user_verified.scalar():
-        raise NotVerified("This user is not verified")
-
     hashed_password = await session.execute(select(User.hashed_password).where(User.email == email))
     if not pwd_context.verify(password, hashed_password.scalar()):
         raise WrongPassword("Password is incorrect")
+
+    is_user_verified = await session.execute(select(User.email_verified).where(User.email == email))
+    if not is_user_verified.scalar():
+        raise NotVerified("This user is not verified")
 
 
 async def encode_jwt_token(data: dict):

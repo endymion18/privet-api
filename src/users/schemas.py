@@ -11,3 +11,8 @@ class UserRegister(BaseModel):
 class ChangePassword(BaseModel):
     old_password: str
     new_password: str
+
+
+class VerifyEmail(BaseModel):
+    email: str
+    token: str

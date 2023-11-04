@@ -11,7 +11,7 @@ from starlette.responses import JSONResponse
 from src.database import get_async_session
 from src.users.exceptions import *
 from src.users.models import User
-from src.users.schemas import UserRegister, ChangePassword
+from src.users.schemas import UserRegister, ChangePassword, VerifyEmail
 from src.users.utils import validate_user, hash_password, verify_user, encode_jwt_token, get_current_user, \
     validate_password, verify_password
 from src.users.verify_email import send_token, check_token
@@ -108,7 +108,7 @@ async def change_password(pass_info: ChangePassword,
     return JSONResponse(content={"detail": "Password was successfully changed"}, status_code=status.HTTP_200_OK)
 
 
-@verify_router.post("/send-verification-token",
+@verify_router.post("/send-verification-token/{email}",
                     status_code=status.HTTP_200_OK)
 async def send_verification_token(email: str,
                                   session: AsyncSession = Depends(get_async_session)):
@@ -121,11 +121,10 @@ async def send_verification_token(email: str,
 
 @verify_router.post("/verify-email",
                     status_code=status.HTTP_202_ACCEPTED)
-async def verify_email(email: str,
-                       token: str,
+async def verify_email(verification: VerifyEmail,
                        session: AsyncSession = Depends(get_async_session)):
     try:
-        await check_token(email, token, session)
+        await check_token(verification.email, verification.token, session)
     except WrongToken as error:
         return JSONResponse(content={"detail": error.__str__()}, status_code=status.HTTP_400_BAD_REQUEST)
     return JSONResponse(content={"detail": "Token is accepted"}, status_code=status.HTTP_202_ACCEPTED)
