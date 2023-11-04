@@ -82,9 +82,9 @@ async def get_current_user(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-@auth_router.post("/users/me/change-password",
-                  status_code=status.HTTP_200_OK
-                  )
+@auth_router.patch("/users/me/change-password",
+                   status_code=status.HTTP_200_OK
+                   )
 async def change_password(pass_info: ChangePassword,
                           current_user: User = Depends(get_current_user),
                           session: AsyncSession = Depends(get_async_session)):
