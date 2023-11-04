@@ -3,6 +3,7 @@ import random
 import smtplib
 
 from email.message import EmailMessage
+from typing import Tuple
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
@@ -18,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import get_async_session
 from src.users.exceptions import *
 from src.users.models import User
-from src.users.schemas import UserRegister
+from src.users.schemas import UserRegister, ChangePassword
 
 # constants
 
@@ -36,10 +37,12 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login", scheme_name="JWT")
 async def validate_user(user_data: UserRegister, session: AsyncSession):
     # Email validation
 
-    stmt = await session.execute(select(User.email).where(User.email == user_data.email))
-    stmt = stmt.scalar()
-    if stmt is not None:
-        raise UserAlreadyExists
+    user_from_db = await session.execute(select(User).where(User.email == user_data.email))
+    user_from_db = user_from_db.scalar()
+    if user_from_db is not None:
+        if user_from_db.email_verified:
+            raise UserAlreadyExists("User already exist")
+        raise NotVerified
 
     # Set check_deliverability to True to check if email can get messages
 
@@ -57,6 +60,14 @@ async def validate_password(password: str):
 
 async def hash_password(password: str) -> str:
     return pwd_context.hash(password)
+
+
+async def verify_password(hashed_password: str, old_password: str, new_password: str) -> str:
+    is_password_correct = pwd_context.verify(old_password, hashed_password)
+    if not is_password_correct:
+        raise WrongPassword("Password is incorrect")
+    new_hashed_password = await hash_password(new_password)
+    return new_hashed_password
 
 
 async def generate_confirmation_token() -> str:
