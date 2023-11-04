@@ -6,3 +6,8 @@ class UserRegister(BaseModel):
     password: str
 
     role_id: int
+
+
+class ChangePassword(BaseModel):
+    old_password: str
+    new_password: str
