@@ -82,7 +82,7 @@ async def get_current_user(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-@auth_router.get("/auth/get-user{email}",
+@auth_router.get("/auth/get-user/{email}",
                  status_code=status.HTTP_200_OK
                  )
 async def get_user_by_email(email: str, session: AsyncSession = Depends(get_async_session)):
