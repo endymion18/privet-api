@@ -17,9 +17,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_async_session
-from src.users.exceptions import *
-from src.users.models import User
-from src.users.schemas import UserRegister, ChangePassword
+from src.auth.exceptions import *
+from src.auth.models import User
+from src.auth.schemas import UserRegister, ChangePassword
 
 # constants
 

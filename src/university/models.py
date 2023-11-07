@@ -1,9 +1,5 @@
-import uuid
-
-from sqlalchemy import Integer, String, ForeignKey, Identity, Boolean
+from sqlalchemy import Integer, String, Identity
 from sqlalchemy.orm import Mapped, mapped_column
-
-from fastapi_users_db_sqlalchemy.generics import GUID
 
 from src.database import Base
 

@@ -9,12 +9,12 @@ from starlette import status
 from starlette.responses import JSONResponse
 
 from src.database import get_async_session
-from src.users.exceptions import *
-from src.users.models import User
-from src.users.schemas import UserRegister, ChangePassword, VerifyEmail
-from src.users.utils import validate_user, hash_password, verify_user, encode_jwt_token, get_current_user, \
+from src.auth.exceptions import *
+from src.auth.models import User
+from src.auth.schemas import UserRegister, ChangePassword, VerifyEmail
+from src.auth.utils import validate_user, hash_password, verify_user, encode_jwt_token, get_current_user, \
     validate_password, verify_password
-from src.users.verify_email import send_token, check_token
+from src.auth.verify_email import send_token, check_token
 
 auth_router = APIRouter(
     tags=["Users"],
@@ -75,14 +75,14 @@ async def login(user_data: OAuth2PasswordRequestForm = Depends(),
             "token_type": "bearer"}
 
 
-@auth_router.get("/users/me",
+@auth_router.get("/auth/me",
                  status_code=status.HTTP_200_OK
                  )
 async def get_current_user(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-@auth_router.patch("/users/me/change-password",
+@auth_router.patch("/auth/me/change-password",
                    status_code=status.HTTP_200_OK
                    )
 async def change_password(pass_info: ChangePassword,

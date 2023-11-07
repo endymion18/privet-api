@@ -1,9 +1,9 @@
 from sqlalchemy import update, select, insert, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.users.exceptions import WrongToken, WrongEmail
-from src.users.models import User, Token
-from src.users.utils import check_verification, generate_confirmation_token, send_email
+from src.auth.exceptions import WrongToken, WrongEmail
+from src.auth.models import User, Token
+from src.auth.utils import check_verification, generate_confirmation_token, send_email
 
 
 async def send_token(email: str, session: AsyncSession):
