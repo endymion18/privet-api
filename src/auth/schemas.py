@@ -16,3 +16,8 @@ class ChangePassword(BaseModel):
 class VerifyEmail(BaseModel):
     email: str
     token: str
+
+
+class ForgotPassword(BaseModel):
+    email: str
+    new_password: str

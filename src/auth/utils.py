@@ -88,12 +88,6 @@ async def send_email(email_to: str, text: str):
         server.send_message(msg)
 
 
-async def check_verification(email: str, session: AsyncSession):
-    stmt = await session.execute(select(User.email_verified).where(User.email == email))
-    if stmt.scalar():
-        raise AlreadyVerified("User already verified")
-
-
 async def verify_user(email: str, password: str, session: AsyncSession):
     email_from_db = await session.execute(select(User.email).where(User.email == email))
     if email_from_db.scalar() is None:
