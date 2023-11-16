@@ -9,6 +9,7 @@ DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{D
 
 
 class Base(DeclarativeBase):
+    """Base class for DB models"""
     pass
 
 
