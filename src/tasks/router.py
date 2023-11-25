@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, insert
 from starlette import status
 
 from starlette.responses import JSONResponse
 
 from src.database import get_async_session
-
+from src.auth.utils import get_current_user
+from src.auth.models import User
 import uuid
 from src.tasks.models import Task, TaskOperation, SetTask
 
@@ -15,19 +16,38 @@ tasks_router = APIRouter(
 )
 
 
-@tasks_router.get("/get-user-tasks",
+@tasks_router.get("/users/me/tasks",
                   status_code=status.HTTP_200_OK)
-async def get_user_tasks(user_id: uuid.UUID, session: AsyncSession = Depends(get_async_session)):
+async def get_current_user_tasks(current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_async_session)):
+    user_id = current_user.id
     stmt = await session.execute(select(Task).where(Task.user_id == user_id))
-    result = stmt.fetchone()[0]
+    result = stmt.fetchone()
+    if result is None:
+        await session.execute(insert(Task).values(user_id=user_id))
+        await session.commit()
+        return JSONResponse({"details": "tasks created"})
+    result = result[0]
 
     return JSONResponse({"details": result.as_dict()})
 
 
+@tasks_router.get("/users/tasks",
+                  status_code=status.HTTP_200_OK)
+async def get_user_tasks(user_id: uuid.UUID, session: AsyncSession = Depends(get_async_session)):
+    stmt = await session.execute(select(Task).where(Task.user_id == user_id))
+    result = stmt.fetchone()
+    if result is None:
+        await session.execute(insert(Task).values(user_id=user_id))
+        await session.commit()
+        return JSONResponse({"details": "tasks created"})
+    result = result[0]
+
+    return JSONResponse({"details": result.as_dict()})
+
 # test=UUID: 8d4b6d8b-0356-4a66-8d2c-6bbd4fdbbe2b
 
 
-@tasks_router.post("/set-user-tasks",
+@tasks_router.post("/users/tasks/change",
                    status_code=status.HTTP_200_OK)
 async def set_user_tasks(tasks: SetTask,
                          session: AsyncSession = Depends(get_async_session)):
