@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
+from starlette.responses import JSONResponse
 
 from src.auth.models import User
+from src.auth.router import get_user_by_email
 from src.auth.utils import get_current_user
 from src.database import get_async_session
 from src.profile.schemas import ChangeUserInfo
@@ -58,6 +60,17 @@ async def get_user_profile_info(current_user: User = Depends(get_current_user),
     return await get_user_profile(current_user, session)
 
 
+@profile_router.get("/users/{email}",
+                    status_code=status.HTTP_200_OK
+                    )
+async def get_user_profile_info(email: str,
+                                session: AsyncSession = Depends(get_async_session)):
+    user = await get_user_by_email(email, session)
+    if isinstance(user, JSONResponse):
+        return JSONResponse(content={"detail": "User does not exist"}, status_code=status.HTTP_400_BAD_REQUEST)
+    return await get_user_profile(user, session)
+
+
 @profile_router.post("/users/me/profile/change",
                      status_code=status.HTTP_200_OK
                      )
@@ -65,4 +78,3 @@ async def change_user_profile_info(user_info: ChangeUserInfo,
                                    current_user: User = Depends(get_current_user),
                                    session: AsyncSession = Depends(get_async_session)):
     return await update_user_info(user_info, current_user, session)
-    pass

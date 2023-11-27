@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.models import User
 from src.profile.models import Student, Buddy, Contacts, Language, LanguagesRelationship, Country
 from src.profile.schemas import BuddyProfile, StudentProfile, ContactSchema, ChangeUserInfo
-from src.university.models import University
 
 
 async def get_user_profile(current_user: User, session: AsyncSession):
@@ -134,4 +133,3 @@ async def get_country_by_id(country_id: int, session: AsyncSession):
     country = await session.execute(select(Country.name).where(Country.id == country_id))
     country = country.scalar()
     return country
-
