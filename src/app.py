@@ -5,6 +5,7 @@ from src.auth.router import auth_router, verify_router
 from src.university.router import university_router
 from src.profile.router import profile_router
 from src.arrivals.router import arrival_router
+from src.tasks.router import tasks_router
 
 app = FastAPI(
     title="Privet API"
@@ -27,3 +28,4 @@ app.include_router(verify_router)
 app.include_router(university_router)
 app.include_router(profile_router)
 app.include_router(arrival_router)
+app.include_router(tasks_router)

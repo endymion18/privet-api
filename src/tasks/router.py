@@ -21,28 +21,30 @@ tasks_router = APIRouter(
 async def get_current_user_tasks(current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_async_session)):
     user_id = current_user.id
     stmt = await session.execute(select(Task).where(Task.user_id == user_id))
-    result = stmt.fetchone()
+    result = stmt.scalar()
     if result is None:
         await session.execute(insert(Task).values(user_id=user_id))
         await session.commit()
         return JSONResponse({"details": "tasks created"})
-    result = result[0]
 
-    return JSONResponse({"details": result.as_dict()})
+    return result.as_dict()
 
 
-@tasks_router.get("/users/tasks",
+@tasks_router.get("/users/tasks/{email}",
                   status_code=status.HTTP_200_OK)
-async def get_user_tasks(user_id: uuid.UUID, session: AsyncSession = Depends(get_async_session)):
+async def get_user_tasks(email: str, session: AsyncSession = Depends(get_async_session)):
+    user_id = await session.execute(select(User.id).where(User.email == email))
+    user_id = user_id.scalar()
+    if user_id is None:
+        return JSONResponse({"details": "wrong email"}, status_code=400)
     stmt = await session.execute(select(Task).where(Task.user_id == user_id))
-    result = stmt.fetchone()
+    result = stmt.scalar()
     if result is None:
         await session.execute(insert(Task).values(user_id=user_id))
         await session.commit()
         return JSONResponse({"details": "tasks created"})
-    result = result[0]
 
-    return JSONResponse({"details": result.as_dict()})
+    return result.as_dict()
 
 # test=UUID: 8d4b6d8b-0356-4a66-8d2c-6bbd4fdbbe2b
 
