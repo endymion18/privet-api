@@ -8,7 +8,8 @@ from pydantic import BaseModel
 class Task(Base):
 
     def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns[2:]}
+        return [{c.name: getattr(self, c.name),
+                 "deadline": None} for c in self.__table__.columns[2:]]
 
     __tablename__ = "profile_tasks"
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
