@@ -56,6 +56,3 @@ class TaskSchema:
         self.fingerprinting = (task_info.fingerprinting, datetime.date(fingerprinting_deadline.year,
                                                                        fingerprinting_deadline.month,
                                                                        fingerprinting_deadline.day))
-
-
-#  visa_expiration in init
