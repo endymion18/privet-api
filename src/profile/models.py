@@ -19,7 +19,7 @@ class Student(Base):
     birthdate: Mapped[date] = mapped_column(Date, nullable=True)
     native_language: Mapped[int] = mapped_column(ForeignKey("language.id"), nullable=True)
     university: Mapped[int] = mapped_column(ForeignKey("university.id"), nullable=True)
-    escort_paid: Mapped[bool] = mapped_column(Boolean, default=False)
+    escort_paid: Mapped[bool] = mapped_column(Boolean, default=True)
     last_buddy: Mapped[int] = mapped_column(ForeignKey("profile_buddy.id"), nullable=True)
     institute: Mapped[int] = mapped_column(ForeignKey("institute.id"), nullable=True)
     study_program: Mapped[str] = mapped_column(String(length=100), nullable=True)
