@@ -78,7 +78,7 @@ async def login(user_data: OAuth2PasswordRequestForm = Depends(),
 @auth_router.get("/auth/me",
                  status_code=status.HTTP_200_OK
                  )
-async def get_current_user(current_user: User = Depends(get_current_user)):
+async def get_current_user_data(current_user: User = Depends(get_current_user)):
     return current_user
 
 
