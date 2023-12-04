@@ -14,9 +14,9 @@ class TaskSchema:
     insurance: bool
     dormitory_documents: bool
     student_ID: bool
-    medical_tests: tuple[bool, datetime.date]
-    visa_extension: tuple[bool, datetime.date]
-    fingerprinting: tuple[bool, datetime.date]
+    medical_tests: tuple[bool, datetime.date or None]
+    visa_extension: tuple[bool, datetime.date or None]
+    fingerprinting: tuple[bool, datetime.date or None]
 
     def __init__(
             self,
@@ -36,23 +36,29 @@ class TaskSchema:
         self.insurance = task_info.insurance
         self.dormitory_documents = task_info.dormitory_documents
         self.student_ID = task_info.student_ID
+        if visa_expiration is not None:
+            visa_extension_deadline = datetime.datetime.fromtimestamp(
+                datetime.datetime.timestamp(visa_expiration) - 3_456_000
+            )
+            medical_tests_deadline = datetime.datetime.fromtimestamp(
+                datetime.datetime.timestamp(visa_extension_deadline) - 259_200
+            )
+            self.medical_tests = (task_info.medical_tests, datetime.date(medical_tests_deadline.year,
+                                                                         medical_tests_deadline.month,
+                                                                         medical_tests_deadline.day))
+            self.visa_extension = (task_info.visa_extension, datetime.date(visa_extension_deadline.year,
+                                                                           visa_extension_deadline.month,
+                                                                           visa_extension_deadline.day))
+        else:
+            self.medical_tests = (task_info.medical_tests, None)
+            self.visa_extension = (task_info.visa_extension, None)
 
-        visa_extension_deadline = datetime.datetime.fromtimestamp(
-            datetime.datetime.timestamp(visa_expiration) - 3_456_000
-        )
-        medical_tests_deadline = datetime.datetime.fromtimestamp(
-            datetime.datetime.timestamp(visa_extension_deadline) - 259_200
-        )
-        self.medical_tests = (task_info.medical_tests, datetime.date(medical_tests_deadline.year,
-                                                                     medical_tests_deadline.month,
-                                                                     medical_tests_deadline.day))
-        self.visa_extension = (task_info.visa_extension, datetime.date(visa_extension_deadline.year,
-                                                                       visa_extension_deadline.month,
-                                                                       visa_extension_deadline.day))
-
-        fingerprinting_deadline = datetime.datetime.fromtimestamp(
-            datetime.datetime.timestamp(last_arrival) + 7_776_000
-        )
-        self.fingerprinting = (task_info.fingerprinting, datetime.date(fingerprinting_deadline.year,
-                                                                       fingerprinting_deadline.month,
-                                                                       fingerprinting_deadline.day))
+        if last_arrival is not None:
+            fingerprinting_deadline = datetime.datetime.fromtimestamp(
+                datetime.datetime.timestamp(last_arrival) + 7_776_000
+            )
+            self.fingerprinting = (task_info.fingerprinting, datetime.date(fingerprinting_deadline.year,
+                                                                           fingerprinting_deadline.month,
+                                                                           fingerprinting_deadline.day))
+        else:
+            self.fingerprinting = (task_info.fingerprinting, None)

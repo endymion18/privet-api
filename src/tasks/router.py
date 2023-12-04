@@ -11,6 +11,7 @@ from src.auth.models import User
 from src.tasks.schemas import TaskSchema
 from src.tasks.models import Task, SetTask
 from datetime import datetime
+from src.profile.models import Student
 
 
 tasks_router = APIRouter(
@@ -28,7 +29,15 @@ async def get_current_user_tasks(current_user: User = Depends(get_current_user),
         await session.execute(insert(Task).values(user_id=user_id))
         await session.commit()
         return JSONResponse({"details": "tasks created"})
-    result = TaskSchema(result, datetime(2023, 11, 13), datetime(2023, 10, 10))
+    arrival_date = await session.execute(select(Student.arrival_date).where(Student.user_id == user_id))
+    arrival_date = arrival_date.scalar()
+    if arrival_date is not None:
+        arrival_date = datetime(arrival_date.year, arrival_date.month, arrival_date.day)
+    visa_expiration = await session.execute(select(Student.visa_expiration).where(Student.user_id == user_id))
+    visa_expiration = visa_expiration.scalar()
+    if visa_expiration is not None:
+        visa_expiration = datetime(visa_expiration.year, visa_expiration.month, visa_expiration.day)
+    result = TaskSchema(result, visa_expiration, arrival_date)
     return result
 
 
@@ -45,7 +54,15 @@ async def get_user_tasks(email: str, session: AsyncSession = Depends(get_async_s
         await session.execute(insert(Task).values(user_id=user_id))
         await session.commit()
         return JSONResponse({"details": "tasks created"})
-    result = TaskSchema(result, datetime(2023, 11, 13), datetime(2023, 10, 10))
+    arrival_date = await session.execute(select(Student.arrival_date).where(Student.user_id == user_id))
+    arrival_date = arrival_date.scalar()
+    if arrival_date is not None:
+        arrival_date = datetime(arrival_date.year, arrival_date.month, arrival_date.day)
+    visa_expiration = await session.execute(select(Student.visa_expiration).where(Student.user_id == user_id))
+    visa_expiration = visa_expiration.scalar()
+    if visa_expiration is not None:
+        visa_expiration = datetime(visa_expiration.year, visa_expiration.month, visa_expiration.day)
+    result = TaskSchema(result, visa_expiration, arrival_date)
     return result
 
 # test=UUID: 8d4b6d8b-0356-4a66-8d2c-6bbd4fdbbe2b
