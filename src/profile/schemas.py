@@ -17,6 +17,12 @@ class StudentProfile:
     birthdate: datetime.date
     native_language: str
     escort_paid: bool
+    institute: str
+    study_program: str
+    arrival_date: datetime.date
+    visa_expiration: datetime.date
+    accommodation: str
+    comment: str
 
     def __init__(
             self,
@@ -31,6 +37,12 @@ class StudentProfile:
         self.birthdate = student_info.birthdate
         self.native_language = student_info.native_language
         self.escort_paid = student_info.escort_paid
+        self.institute = student_info.institute
+        self.study_program = student_info.study_program
+        self.arrival_date = student_info.arrival_date
+        self.visa_expiration = student_info.visa_expiration
+        self.accommodation = student_info.accommodation
+        self.comment = student_info.comment
 
 
 class BuddyProfile:
