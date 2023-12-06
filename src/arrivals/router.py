@@ -31,9 +31,9 @@ async def book_new_arrival(arrival_data: list[StudentArrivalData], current_user:
     return JSONResponse(content={"detail": "Arrival has been booked"}, status_code=200)
 
 
-@arrival_router.post("/users/me/arrival",
+@arrival_router.post("/arrivals",
                      status_code=status.HTTP_200_OK
                      )
-async def get_my_arrival(current_user: User = Depends(get_current_user),
-                         session: AsyncSession = Depends(get_async_session)):
+async def get_all_arrivals(current_user: User = Depends(get_current_user),
+                           session: AsyncSession = Depends(get_async_session)):
     pass
