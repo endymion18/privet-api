@@ -11,7 +11,7 @@ class Arrival(Base):
     __tablename__ = 'arrival'
 
     id: Mapped[int] = mapped_column(Integer, Identity(start=100), primary_key=True)
-    arrival_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    arrival_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     flight_number: Mapped[str] = mapped_column(String(length=20), nullable=False)
     arrival_point: Mapped[str] = mapped_column(String(length=20), nullable=False)
     comment: Mapped[str] = mapped_column(String(length=300), nullable=True)
@@ -25,5 +25,5 @@ class ArrivalParticipants(Base):
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
     arrival_id: Mapped[int] = mapped_column(ForeignKey("arrival.id"))
-    participant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id"))
+    participant_email: Mapped[str] = mapped_column(ForeignKey("user.email"))
     participant_role: Mapped[int] = mapped_column(ForeignKey("role.id"))
