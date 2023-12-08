@@ -9,7 +9,8 @@ from src.database import get_async_session
 from src.auth.utils import get_current_user
 from src.auth.models import User
 from src.tasks.schemas import TaskSchema
-from src.tasks.models import Task, SetTask
+from src.tasks.models import Task
+from src.arrivals.models import ArrivalParticipants
 from datetime import datetime
 from src.profile.models import Student
 
@@ -65,7 +66,11 @@ async def get_user_tasks(email: str, session: AsyncSession = Depends(get_async_s
     result = TaskSchema(result, visa_expiration, arrival_date)
     return result
 
-# test=UUID: 8d4b6d8b-0356-4a66-8d2c-6bbd4fdbbe2b
+
+@tasks_router.get("/arrivals/tasks/",
+                  status_code=status.HTTP_200_OK)
+async def get_arrival_tasks(arrival_id: int):
+    pass
 
 
 @tasks_router.post("/users/tasks/change/{email}",
