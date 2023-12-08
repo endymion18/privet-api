@@ -14,7 +14,6 @@ from src.arrivals.models import ArrivalParticipants
 from datetime import datetime
 from src.profile.models import Student
 
-
 tasks_router = APIRouter(
     tags=["Tasks"]
 )
@@ -22,7 +21,8 @@ tasks_router = APIRouter(
 
 @tasks_router.get("/users/me/tasks",
                   status_code=status.HTTP_200_OK)
-async def get_current_user_tasks(current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_async_session)):
+async def get_current_user_tasks(current_user: User = Depends(get_current_user),
+                                 session: AsyncSession = Depends(get_async_session)):
     user_id = current_user.id
     stmt = await session.execute(select(Task).where(Task.user_id == user_id))
     result = stmt.scalar()
@@ -42,6 +42,7 @@ async def get_current_user_tasks(current_user: User = Depends(get_current_user),
     return result
 
 
+# need to remove this?
 @tasks_router.get("/users/tasks/{email}",
                   status_code=status.HTTP_200_OK)
 async def get_user_tasks(email: str, session: AsyncSession = Depends(get_async_session)):
@@ -69,8 +70,30 @@ async def get_user_tasks(email: str, session: AsyncSession = Depends(get_async_s
 
 @tasks_router.get("/arrivals/tasks/",
                   status_code=status.HTTP_200_OK)
-async def get_arrival_tasks(arrival_id: int):
-    pass
+async def get_arrival_tasks(arrival_id: int, session: AsyncSession = Depends(get_async_session)):
+    arrival_participants = await session.execute(select(ArrivalParticipants)
+                                                 .where(ArrivalParticipants.arrival_id == arrival_id))
+    arrival_participants = arrival_participants.fetchall()
+    if arrival_participants is None:
+        return JSONResponse({"details": "no participants found"}, status_code=400)
+    tasks = []
+    for participant in arrival_participants:
+        if participant[0].participant_role == 1:
+            user_id = await session.execute(select(User.id).where(User.email == participant[0].participant_email))
+            user_id = user_id.scalar()
+            participant_tasks = await session.execute(select(Task).where(Task.user_id == user_id))
+            participant_tasks = participant_tasks.scalar()
+            arrival_date = await session.execute(select(Student.arrival_date).where(Student.user_id == user_id))
+            arrival_date = arrival_date.scalar()
+            if arrival_date is not None:
+                arrival_date = datetime(arrival_date.year, arrival_date.month, arrival_date.day)
+            visa_expiration = await session.execute(select(Student.visa_expiration).where(Student.user_id == user_id))
+            visa_expiration = visa_expiration.scalar()
+            if visa_expiration is not None:
+                visa_expiration = datetime(visa_expiration.year, visa_expiration.month, visa_expiration.day)
+            result = TaskSchema(participant_tasks, visa_expiration, arrival_date)
+            tasks.append(result)
+    return tasks
 
 
 @tasks_router.post("/users/tasks/change/{email}",
