@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime
 
 from sqlalchemy import Identity, Integer, DateTime, ForeignKey, String, Boolean
@@ -27,3 +26,11 @@ class ArrivalParticipants(Base):
     arrival_id: Mapped[int] = mapped_column(ForeignKey("arrival.id"))
     participant_email: Mapped[str] = mapped_column(ForeignKey("user.email"))
     participant_role: Mapped[int] = mapped_column(ForeignKey("role.id"))
+
+
+class ArrivalInvitations(Base):
+    __tablename__ = 'arrival_invitations'
+
+    id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
+    arrival_id: Mapped[int] = mapped_column(ForeignKey("arrival.id"))
+    student_email: Mapped[str] = mapped_column(ForeignKey("user.email"))
