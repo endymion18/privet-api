@@ -3,7 +3,6 @@ import random
 import smtplib
 
 from email.message import EmailMessage
-from typing import Tuple
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
@@ -19,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import get_async_session
 from src.auth.exceptions import *
 from src.auth.models import User
-from src.auth.schemas import UserRegister, ChangePassword
+from src.auth.schemas import UserRegister
 
 # constants
 
@@ -31,7 +30,7 @@ email_from = os.environ.get("EMAIL_ADDRESS_FROM")
 email_password = os.environ.get("EMAIL_PASSWORD")
 secret_key = os.environ.get("SECRET_KEY")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login", scheme_name="JWT")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login", scheme_name="Bearer")
 
 
 async def validate_user(user_data: UserRegister, session: AsyncSession):

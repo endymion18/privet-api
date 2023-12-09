@@ -1,7 +1,7 @@
-from datetime import date
+from datetime import date, datetime
 import uuid
 
-from sqlalchemy import Identity, Integer, ForeignKey, String, Date, Boolean
+from sqlalchemy import Identity, Integer, ForeignKey, String, Date, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.database import Base
@@ -23,7 +23,7 @@ class Student(Base):
     last_buddy: Mapped[int] = mapped_column(ForeignKey("profile_buddy.id"), nullable=True)
     institute: Mapped[int] = mapped_column(ForeignKey("institute.id"), nullable=True)
     study_program: Mapped[str] = mapped_column(String(length=100), nullable=True)
-    arrival_date: Mapped[date] = mapped_column(Date, nullable=True)
+    arrival_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     visa_expiration: Mapped[date] = mapped_column(Date, nullable=True)
     accommodation: Mapped[str] = mapped_column(String(length=200), nullable=True)
     comment: Mapped[str] = mapped_column(String(length=300), nullable=True)

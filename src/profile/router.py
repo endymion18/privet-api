@@ -67,7 +67,7 @@ async def get_user_profile_info(email: str,
                                 session: AsyncSession = Depends(get_async_session)):
     user = await get_user_by_email(email, session)
     if isinstance(user, JSONResponse):
-        return JSONResponse(content={"detail": "User does not exist"}, status_code=status.HTTP_400_BAD_REQUEST)
+        return user
     return await get_user_profile(user, session)
 
 
