@@ -5,9 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import and_
 
 from src.arrivals.models import Arrival, ArrivalParticipants, ArrivalInvitations
-from src.arrivals.schemas import StudentArrivalData, InvitedStudentData
+from src.arrivals.schemas import StudentArrivalData, InvitedStudentData, FormattedArrival
 from src.auth.models import User
 from src.profile.models import Student, Contacts
+from src.profile.router import get_user_profile_info
 
 
 async def update_profile_by_arrival(arrival_data: StudentArrivalData,
@@ -104,7 +105,7 @@ async def check_invitation_in_db(user_email: str, session: AsyncSession):
     return arrival.scalar()
 
 
-async def check_current_arrival(user_email: str, session: AsyncSession):
+async def check_current_arrival(user_email: str, session: AsyncSession) -> bool:
     arrival = await session.execute(
         select(ArrivalParticipants).where(and_(ArrivalParticipants.participant_email == user_email,
                                                ArrivalParticipants.participant_role == 1)))
@@ -112,3 +113,40 @@ async def check_current_arrival(user_email: str, session: AsyncSession):
 
     return False if arrival is None else True
 
+
+async def get_all_arrivals_dict(session: AsyncSession) -> dict:
+    current_datetime = datetime.datetime.now()
+
+    past_arrivals = await session.execute(
+        select(Arrival).where(Arrival.arrival_date < current_datetime).order_by(Arrival.arrival_date.desc()))
+
+    future_arrivals = await session.execute(
+        select(Arrival).where(Arrival.arrival_date >= current_datetime).order_by(Arrival.arrival_date))
+
+    return {
+        "past_arrivals": past_arrivals.scalars().all(),
+        "future_arrivals": future_arrivals.scalars().all()
+    }
+
+
+async def format_arrivals_list(arrivals_list: list, session: AsyncSession) -> list:
+    for i in range(len(arrivals_list)):
+        arrival = arrivals_list[i]
+
+        participants = await session.execute(
+            select(ArrivalParticipants).where(ArrivalParticipants.arrival_id == arrival.id))
+        participants = participants.scalars().all()
+
+        students = [await get_user_profile_info(participant.participant_email, session) for participant in participants
+                    if participant.participant_role == 1]
+        students_full_names = [student["profile_info"].full_name for student in students]
+        students_countries = [student["profile_info"].citizenship for student in students]
+
+        students_count = sum(1 for participant in participants if participant.participant_role == 1)
+        buddies_count = sum(1 for participant in participants if participant.participant_role == 2)
+
+        required_buddies = 2 if students_count >= 3 else 1
+        buddies_amount = f"{buddies_count}/{required_buddies}"
+
+        arrivals_list[i] = FormattedArrival(arrival, students_full_names, students_countries, buddies_amount)
+    return arrivals_list
