@@ -1,7 +1,9 @@
-from datetime import date, time
+from datetime import date, time, datetime
 from typing import Optional
 
 from pydantic import BaseModel, EmailStr
+
+from src.arrivals.models import Arrival
 
 
 class StudentArrivalData(BaseModel):
@@ -22,7 +24,7 @@ class StudentArrivalData(BaseModel):
 
 class ArrivalData(BaseModel):
     student_data: StudentArrivalData
-    invite: list[EmailStr]
+    invite: Optional[list[EmailStr]]
 
 
 class InvitedStudentData(BaseModel):
@@ -35,3 +37,26 @@ class InvitedStudentData(BaseModel):
     vk: Optional[str]
     tickets: Optional[str]
     submit_arrival: bool
+
+
+class FormattedArrival:
+    arrival_id: int
+    arrival_date: datetime
+    group_full_names: list[str]
+    group_countries: list[int]
+    buddies_amount: str
+
+    def __init__(self, arrival_data: Arrival,
+                 group_full_names: list[str],
+                 group_countries: list[int],
+                 buddies_amount: str):
+        self.arrival_id = arrival_data.id
+        self.arrival_date = arrival_data.arrival_date
+
+        group_full_names = group_full_names[0:3] if len(group_full_names) >= 3 else group_full_names
+        group_countries = group_countries[0:3] if len(group_countries) >= 3 else group_countries
+
+        self.group_full_names = group_full_names
+        self.group_countries = group_countries
+        self.buddies_amount = buddies_amount
+

@@ -6,11 +6,12 @@ from starlette.responses import JSONResponse
 from src.arrivals.schemas import ArrivalData, InvitedStudentData
 from src.arrivals.utils import update_profile_by_arrival, submit_arrival, add_student_to_invites, \
     add_student_to_arrival, check_invitation_in_db, update_profile_by_invitation, delete_student_from_invitation_table, \
-    check_current_arrival
+    check_current_arrival, get_all_arrivals_dict, format_arrivals_list
 from src.auth.models import User
 from src.auth.utils import get_current_user
 from src.database import get_async_session
 from src.profile.router import get_user_profile_info
+from src.profile.schemas import BuddyProfile
 
 arrival_router = APIRouter(
     tags=["Arrivals"],
@@ -27,6 +28,9 @@ async def check_payment(email: str,
     if isinstance(user_profile, JSONResponse):
         return user_profile
 
+    if isinstance(user_profile["profile_info"], BuddyProfile):
+        return JSONResponse(content={"detail": "You can't invite Buddy to arrival"},
+                            status_code=status.HTTP_400_BAD_REQUEST)
     return user_profile["profile_info"].escort_paid
 
 
@@ -104,4 +108,8 @@ async def submit_invitation(student_data: InvitedStudentData,
                      )
 async def get_all_arrivals(current_user: User = Depends(get_current_user),
                            session: AsyncSession = Depends(get_async_session)):
-    pass
+    arrivals = await get_all_arrivals_dict(session)
+
+    arrivals["past_arrivals"] = await format_arrivals_list(arrivals["past_arrivals"], session)
+    arrivals["future_arrivals"] = await format_arrivals_list(arrivals["future_arrivals"], session)
+    return arrivals
