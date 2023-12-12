@@ -2,9 +2,15 @@ from sqlalchemy import ForeignKey, Boolean, Identity, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 import uuid
 from src.database import Base
+from pydantic import BaseModel
 
 
 class Task(Base):
+
+    def as_dict(self):
+        return [{c.name: getattr(self, c.name),
+                 "deadline": None} for c in self.__table__.columns[2:]]
+
     __tablename__ = "profile_tasks"
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id"))
@@ -24,3 +30,12 @@ class Task(Base):
     visa_extension: Mapped[bool] = mapped_column(Boolean, default=False)
     fingerprinting: Mapped[bool] = mapped_column(Boolean, default=False)
 
+
+class TaskOperation(BaseModel):
+    name: str
+    value: bool
+
+
+class SetTask(BaseModel):
+    user_id: uuid.UUID
+    tasks: list[TaskOperation] = []
