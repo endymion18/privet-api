@@ -1,3 +1,4 @@
+import uuid
 from datetime import date, time, datetime
 from typing import Optional
 
@@ -60,3 +61,55 @@ class FormattedArrival:
         self.group_countries = group_countries
         self.buddies_amount = buddies_amount
 
+
+class StudentArrivalDataSchema:
+    full_name: str
+    sex: str
+    arrival_date: date
+    arrival_time: time
+    flight_number: str
+    arrival_point: str
+    citizenship: int
+    phone: Optional[str]
+    telegram: Optional[str]
+    whatsapp: Optional[str]
+    vk: Optional[str]
+    comment: Optional[str]
+    tickets: Optional[str]
+
+    def __init__(self, student_data, arrival_data):
+        self.full_name = student_data["profile_info"].full_name
+        self.sex = student_data["profile_info"].sex
+        self.arrival_date = arrival_data.arrival_date.date()
+        self.arrival_time = arrival_data.arrival_date.timetz()
+        self.flight_number = arrival_data.flight_number
+        self.arrival_point = arrival_data.arrival_point
+        self.citizenship = student_data["profile_info"].citizenship
+        self.phone = student_data["contacts"].phone
+        self.telegram = student_data["contacts"].telegram
+        self.vk = student_data["contacts"].vk
+        self.comment = arrival_data.comment
+        self.tickets = None
+
+
+class BuddyArrivalSchema:
+    full_name: str
+    photo: Optional[str]
+
+    def __init__(self, buddy_data):
+        self.full_name = buddy_data["profile_info"].full_name
+        self.photo = buddy_data["profile_info"].photo_filepath
+
+
+class BuddySchema:
+    id: uuid.UUID
+    full_name: str
+
+    def __init__(self, buddy_data):
+        self.id = buddy_data.user_id
+        self.full_name = buddy_data.full_name
+
+
+class AddBuddyToArrivalSchema(BaseModel):
+    buddy_id: uuid.UUID
+    arrival_id: int
