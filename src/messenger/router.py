@@ -33,7 +33,7 @@ async def create_chat(first_user: uuid.UUID, second_user: uuid.UUID,
     return JSONResponse({"details": "no user found"}, status_code=400)
 
 
-@messages_router.post("/messages/chat/",
+@messages_router.get("/messages/chat/",
                       status_code=status.HTTP_200_OK)
 async def get_user_chats(current_user: User = Depends(get_current_user),
                          session: AsyncSession = Depends(get_async_session)):
