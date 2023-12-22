@@ -43,29 +43,29 @@ async def get_current_user_tasks(current_user: User = Depends(get_current_user),
 
 
 # need to remove this?
-@tasks_router.get("/users/tasks/{email}",
-                  status_code=status.HTTP_200_OK)
-async def get_user_tasks(email: str, session: AsyncSession = Depends(get_async_session)):
-    user_id = await session.execute(select(User.id).where(User.email == email))
-    user_id = user_id.scalar()
-    if user_id is None:
-        return JSONResponse({"details": "wrong email"}, status_code=400)
-    stmt = await session.execute(select(Task).where(Task.user_id == user_id))
-    result = stmt.scalar()
-    if result is None:
-        await session.execute(insert(Task).values(user_id=user_id))
-        await session.commit()
-        return JSONResponse({"details": "tasks created"})
-    arrival_date = await session.execute(select(Student.arrival_date).where(Student.user_id == user_id))
-    arrival_date = arrival_date.scalar()
-    if arrival_date is not None:
-        arrival_date = datetime(arrival_date.year, arrival_date.month, arrival_date.day)
-    visa_expiration = await session.execute(select(Student.visa_expiration).where(Student.user_id == user_id))
-    visa_expiration = visa_expiration.scalar()
-    if visa_expiration is not None:
-        visa_expiration = datetime(visa_expiration.year, visa_expiration.month, visa_expiration.day)
-    result = TaskSchema(result, visa_expiration, arrival_date)
-    return result
+# @tasks_router.get("/users/tasks/{email}",
+#                   status_code=status.HTTP_200_OK)
+# async def get_user_tasks(email: str, session: AsyncSession = Depends(get_async_session)):
+#     user_id = await session.execute(select(User.id).where(User.email == email))
+#     user_id = user_id.scalar()
+#     if user_id is None:
+#         return JSONResponse({"details": "wrong email"}, status_code=400)
+#     stmt = await session.execute(select(Task).where(Task.user_id == user_id))
+#     result = stmt.scalar()
+#     if result is None:
+#         await session.execute(insert(Task).values(user_id=user_id))
+#         await session.commit()
+#         return JSONResponse({"details": "tasks created"})
+#     arrival_date = await session.execute(select(Student.arrival_date).where(Student.user_id == user_id))
+#     arrival_date = arrival_date.scalar()
+#     if arrival_date is not None:
+#         arrival_date = datetime(arrival_date.year, arrival_date.month, arrival_date.day)
+#     visa_expiration = await session.execute(select(Student.visa_expiration).where(Student.user_id == user_id))
+#     visa_expiration = visa_expiration.scalar()
+#     if visa_expiration is not None:
+#         visa_expiration = datetime(visa_expiration.year, visa_expiration.month, visa_expiration.day)
+#     result = TaskSchema(result, visa_expiration, arrival_date)
+#     return result
 
 
 @tasks_router.get("/arrivals/tasks/",
