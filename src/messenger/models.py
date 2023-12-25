@@ -1,4 +1,4 @@
-from sqlalchemy import Identity, Integer, ForeignKey, DateTime, String
+from sqlalchemy import Identity, Integer, ForeignKey, DateTime, String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 import uuid
 from src.database import Base
@@ -14,9 +14,11 @@ class Chat(Base):
 
 
 class Message(Base):
+    __tablename__ = "message"
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
     from_user: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id"))
     chat_id: Mapped[int] = mapped_column(ForeignKey("chat.id"))
     date_print: Mapped[datetime] = mapped_column(DateTime)
     text: Mapped[str] = mapped_column(String, nullable=False)
     attachment: Mapped[str] = mapped_column(String)
+    read: Mapped[bool] = mapped_column(Boolean)
