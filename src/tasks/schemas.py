@@ -2,6 +2,7 @@ from src.tasks.models import Task
 import datetime
 import uuid
 
+
 class TaskSchema:
     user_id: uuid.UUID
     airport_meeting: bool
