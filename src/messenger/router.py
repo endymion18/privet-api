@@ -1,5 +1,6 @@
 import uuid
 import datetime
+import json
 from src.database import get_async_session
 from src.auth.utils import get_current_user
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Query
@@ -9,7 +10,8 @@ from starlette import status
 from starlette.responses import JSONResponse
 from src.auth.models import User
 from src.messenger.models import Chat, Message
-from src.messenger.utils import manager, websocket_auth
+from src.messenger.wsmanager import manager
+
 
 messages_router = APIRouter(
     tags=["messages"]
@@ -59,26 +61,24 @@ async def create_message(chat_id: int, text: str, attachment: str = "",
 
 @messages_router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket,
-                             session: AsyncSession =Depends(get_async_session), token: str = Query(...)):
-    await websocket.accept()
-    result = await websocket_auth(websocket, token)
-    if result is None:
+                             session: AsyncSession = Depends(get_async_session), token: str = Query(...)):
+    current_user = await manager.add_connection(websocket, token)
+    if current_user is None:
         return
-    stmt = await session.execute(select(User).where(User.email == result))
-    current_user = stmt.scalar()
-    await websocket.send_text("connection success")
-    manager.add_connection(current_user.id, websocket)
-    print(current_user.email)
     try:
         while True:
-            data = await websocket.receive_json()
+            data = await websocket.receive_text()
+            print(data)
+            data = json.loads(data)
+            if "type" not in data:
+                continue
             if data["type"] == "send_message":
                 current_datetime = datetime.datetime.now()
                 await session.execute(insert(Message)
                                       .values(chat_id=data["chat_id"], from_user=current_user.id,
                                               date_print=current_datetime,
-                                              attachment='', text=data["text"]))
-            manager.proceed_request(data["type"], current_user.id, data["chat_id"],
-                                    data["text"])
+                                              attachment='', text=data["text"], read=False))
+                await manager.send_message(data["type"], current_user.id, data["chat_id"],
+                                           data["text"])
     except WebSocketDisconnect:
         manager.remove_connection(websocket)
