@@ -6,6 +6,7 @@ from src.university.router import university_router
 from src.profile.router import profile_router
 from src.arrivals.router import arrival_router, teamleader_router
 from src.tasks.router import tasks_router
+from src.messenger.router import messages_router
 
 app = FastAPI(
     title="Privet API"
@@ -30,3 +31,4 @@ app.include_router(profile_router)
 app.include_router(arrival_router)
 app.include_router(teamleader_router)
 app.include_router(tasks_router)
+app.include_router(messages_router)
