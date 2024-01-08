@@ -42,7 +42,7 @@ async def get_user_chats(current_user: User = Depends(get_current_user),
     user_id = current_user.id
     stmt = await session.execute(select(Chat).where(or_(Chat.first_user == user_id,
                                                         Chat.second_user == user_id)))
-    result = stmt.scalar()
+    result = stmt.scalars().all()
     return result
 
 
