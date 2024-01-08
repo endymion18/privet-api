@@ -5,7 +5,7 @@ from src.database import get_async_session
 from src.auth.utils import get_current_user
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert, or_
+from sqlalchemy import select, insert, or_, and_
 from starlette import status
 from starlette.responses import JSONResponse
 from src.auth.models import User
@@ -27,6 +27,13 @@ async def check_user(user_id: uuid.UUID, session: AsyncSession):
                       status_code=status.HTTP_200_OK)
 async def create_chat(first_user: uuid.UUID, second_user: uuid.UUID,
                       session: AsyncSession = Depends(get_async_session)):
+    stmt = await session.execute(select(Chat).where(or_(and_(Chat.first_user == first_user,
+                                                        Chat.second_user == second_user),
+                                                        and_(Chat.first_user == second_user,
+                                                        Chat.second_user == first_user))))
+    result = stmt.scalar()
+    if result is not None:
+        return JSONResponse({'details': 'err: chat with this params already exists'})
     if await check_user(first_user, session) and await check_user(second_user, session):
         await session.execute(insert(Chat).values(first_user=first_user,
                                                   second_user=second_user))
@@ -39,6 +46,7 @@ async def create_chat(first_user: uuid.UUID, second_user: uuid.UUID,
                      status_code=status.HTTP_200_OK)
 async def get_user_chats(current_user: User = Depends(get_current_user),
                          session: AsyncSession = Depends(get_async_session)):
+
     user_id = current_user.id
     stmt = await session.execute(select(Chat).where(or_(Chat.first_user == user_id,
                                                         Chat.second_user == user_id)))
@@ -49,6 +57,7 @@ async def get_user_chats(current_user: User = Depends(get_current_user),
 @messages_router.get("/messages/{chat_id}")
 async def get_chat_messages(chat_id: int, count: int = 100, offset: int = 0,
                             session: AsyncSession = Depends(get_async_session)):
+
     stmt = await session.execute(select(Message)
                                  .where(Message.chat_id == chat_id)
                                  .order_by(Message.date_print.asc())  # в возрастающем или убывающем порядке???
