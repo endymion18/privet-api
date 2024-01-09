@@ -2,8 +2,10 @@ from src.tasks.models import Task
 import datetime
 import uuid
 
+
 class TaskSchema:
     user_id: uuid.UUID
+    email: str
     airport_meeting: bool
     motel_checked_in: bool
     money_exchange: bool
@@ -24,9 +26,11 @@ class TaskSchema:
             task_info: Task,
             visa_expiration: datetime.datetime,
             last_arrival: datetime.datetime,
+            email: str,
 
     ):
         self.user_id = task_info.user_id
+        self.email = email
         self.airport_meeting = task_info.airport_meeting
         self.motel_checked_in = task_info.motel_checked_in
         self.money_exchange = task_info.money_exchange
