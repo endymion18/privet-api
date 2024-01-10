@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import select, insert, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -133,3 +135,12 @@ async def get_country_by_id(country_id: int, session: AsyncSession):
     country = await session.execute(select(Country.name).where(Country.id == country_id))
     country = country.scalar()
     return country
+
+
+async def get_user_by_uuid(user_id: uuid.UUID, session: AsyncSession):
+    user = await session.execute(select(User).where(User.id == user_id))
+    print(user)
+    user = user.scalar()
+    if user is not None:
+        return user
+    return None

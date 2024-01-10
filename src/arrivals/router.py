@@ -7,11 +7,12 @@ from src.arrivals.schemas import ArrivalData, InvitedStudentData, AddBuddyToArri
 from src.arrivals.utils import update_profile_by_arrival, submit_arrival, add_student_to_invites, \
     add_student_to_arrival, check_invitation_in_db, update_profile_by_invitation, delete_student_from_invitation_table, \
     check_current_arrival, get_all_arrivals_dict, format_arrivals_list, get_arrival_data_by_id, get_buddies, add_buddy, \
-    confirm_arrival, delete_buddy, get_buddy_arrivals
+    confirm_arrival, delete_buddy, get_buddy_arrivals, get_students_ids, delete_chat
 from src.auth.models import User
 from src.auth.utils import get_current_user
 from src.database import get_async_session
-from src.profile.router import get_user_profile_info
+from src.messenger.router import create_chat
+from src.profile.router import get_user_profile_info_by_email
 from src.profile.schemas import BuddyProfile
 
 arrival_router = APIRouter(
@@ -28,7 +29,7 @@ teamleader_router = APIRouter(
                     )
 async def check_payment(email: str,
                         session: AsyncSession = Depends(get_async_session)):
-    user_profile = await get_user_profile_info(email, session)
+    user_profile = await get_user_profile_info_by_email(email, session)
 
     if isinstance(user_profile, JSONResponse):
         return user_profile
@@ -151,6 +152,9 @@ async def signup_to_arrival(arrival_id: int, current_user: User = Depends(get_cu
     required_buddies = 2 if students_count >= 3 else 1
     if buddies_count < required_buddies:
         if await add_buddy(current_user.id, arrival_id, session):
+            student_ids = await get_students_ids(arrival_id, session)
+            for student_id in student_ids:
+                await create_chat(current_user.id, student_id)
             return JSONResponse(content={"detail": "Buddy has been added to arrival"}, status_code=200)
         return JSONResponse(content={"detail": "Buddy is already in this arrival"}, status_code=200)
     return JSONResponse(content={"detail": "Arrival already has max amount of buddies"}, status_code=200)
@@ -170,6 +174,9 @@ async def get_all_buddies(current_user: User = Depends(get_current_user),
 async def add_buddy_to_arrival(data: AddBuddyToArrivalSchema, current_user: User = Depends(get_current_user),
                                session: AsyncSession = Depends(get_async_session)):
     if await add_buddy(data.buddy_id, data.arrival_id, session):
+        student_ids = await get_students_ids(data.arrival_id, session)
+        for student_id in student_ids:
+            await create_chat(data.buddy_id, student_id, session)
         return JSONResponse(content={"detail": "Buddy has been added to arrival"}, status_code=200)
     return JSONResponse(content={"detail": "Buddy is already in this arrival"}, status_code=200)
 
@@ -189,5 +196,8 @@ async def confirm_arrival_by_id(arrival_id: int, current_user: User = Depends(ge
 async def delete_buddy_from_arrival(data: AddBuddyToArrivalSchema, current_user: User = Depends(get_current_user),
                                     session: AsyncSession = Depends(get_async_session)):
     if await delete_buddy(data.buddy_id, data.arrival_id, session):
+        student_ids = await get_students_ids(data.arrival_id, session)
+        for student_id in student_ids:
+            await delete_chat(data.buddy_id, student_id, session)
         return JSONResponse(content={"detail": "Buddy has been deleted from arrival"}, status_code=200)
     return JSONResponse(content={"detail": "This buddy do not belong to this arrival"}, status_code=200)

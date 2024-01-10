@@ -70,8 +70,8 @@ async def get_user_chats(current_user: User = Depends(get_current_user),
                                          .where(Buddy.user_id == chat.second_user))
             second_user_name = stmt.scalar()
         stmt = await session.execute(select(Message)
-                                             .where(Message.chat_id == chat.id)
-                                             .order_by(Message.date_print.desc()))
+                                     .where(Message.chat_id == chat.id)
+                                     .order_by(Message.date_print.desc()))
         last_message = stmt.scalar()
         result.append(GetChatSchema(chat, first_user_name, second_user_name, last_message))
     return result

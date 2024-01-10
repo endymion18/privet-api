@@ -1,16 +1,19 @@
 import datetime
 import uuid
 
-from sqlalchemy import update, insert, select, delete
+from sqlalchemy import update, insert, select, delete, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import and_
+from starlette.responses import JSONResponse
 
 from src.arrivals.models import Arrival, ArrivalParticipants, ArrivalInvitations
 from src.arrivals.schemas import StudentArrivalData, InvitedStudentData, FormattedArrival, StudentArrivalDataSchema, \
     BuddyArrivalSchema, BuddySchema
 from src.auth.models import User
+from src.auth.router import get_user_by_email
+from src.messenger.models import Chat, Message
 from src.profile.models import Student, Contacts, Buddy
-from src.profile.router import get_user_profile_info
+from src.profile.router import get_user_profile_info_by_email
 
 
 async def update_profile_by_arrival(arrival_data: StudentArrivalData,
@@ -148,7 +151,7 @@ async def get_arrival_data_by_id(arrival_id: int, session: AsyncSession):
     students = []
     buddies = []
     for participant in participants:
-        profile = await get_user_profile_info(participant.participant_email, session)
+        profile = await get_user_profile_info_by_email(participant.participant_email, session)
         if participant.participant_role == 1:
             students.append(StudentArrivalDataSchema(profile, arrival_info))
         else:
@@ -167,7 +170,7 @@ async def format_arrivals_list(arrivals_list: list, session: AsyncSession) -> li
             select(ArrivalParticipants).where(ArrivalParticipants.arrival_id == arrival.id))
         participants = participants.scalars().all()
 
-        students = [await get_user_profile_info(participant.participant_email, session) for participant in participants
+        students = [await get_user_profile_info_by_email(participant.participant_email, session) for participant in participants
                     if participant.participant_role == 1]
         students_full_names = [student["profile_info"].full_name for student in students]
         students_countries = [student["profile_info"].citizenship for student in students]
@@ -223,3 +226,32 @@ async def delete_buddy(user_id: uuid.UUID, arrival_id: int, session: AsyncSessio
         await session.commit()
         return True
     return False
+
+
+async def get_students_ids(arrival_id: int, session: AsyncSession):
+    student_emails = await session.execute(
+        select(ArrivalParticipants.participant_email).where(and_(ArrivalParticipants.arrival_id == arrival_id,
+                                                                 ArrivalParticipants.participant_role == 1)))
+    student_emails = student_emails.scalars().all()
+
+    student_ids = []
+    for email in student_emails:
+        user = await get_user_by_email(email, session)
+        if not isinstance(user, JSONResponse):
+            student_ids.append(user.id)
+    return student_ids
+
+
+async def delete_chat(first_user: uuid.UUID, second_user: uuid.UUID, session: AsyncSession):
+    stmt = await session.execute(select(Chat).where(or_(and_(Chat.first_user == first_user,
+                                                             Chat.second_user == second_user),
+                                                        and_(Chat.first_user == second_user,
+                                                             Chat.second_user == first_user
+                                                             ))))
+    chats = stmt.scalars().all()
+
+    for chat in chats:
+        await session.execute(delete(Message).where(Message.chat_id == chat.id))
+        await session.execute(delete(Chat).where(Chat.id == chat.id))
+
+    await session.commit()
