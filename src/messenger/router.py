@@ -5,7 +5,7 @@ from src.database import get_async_session
 from src.auth.utils import get_current_user
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert, or_, and_, func
+from sqlalchemy import select, insert, or_, and_
 from starlette import status
 from starlette.responses import JSONResponse
 from src.auth.models import User
@@ -73,7 +73,7 @@ async def get_user_chats(current_user: User = Depends(get_current_user),
                                      .where(Message.chat_id == chat.id)
                                      .order_by(Message.date_print.desc()))
         last_message = stmt.scalar()
-        result.append(GetChatSchema(chat, first_user_name, second_user_name, last_message))
+        result.append(GetChatSchema(user_id, chat, first_user_name, second_user_name, last_message))
     return result
 
 
