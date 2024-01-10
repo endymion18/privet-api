@@ -156,8 +156,8 @@ async def signup_to_arrival(arrival_id: int, current_user: User = Depends(get_cu
             for student_id in student_ids:
                 await create_chat(current_user.id, student_id)
             return JSONResponse(content={"detail": "Buddy has been added to arrival"}, status_code=200)
-        return JSONResponse(content={"detail": "Buddy is already in this arrival"}, status_code=200)
-    return JSONResponse(content={"detail": "Arrival already has max amount of buddies"}, status_code=200)
+        return JSONResponse(content={"detail": "Buddy is already in this arrival"}, status_code=400)
+    return JSONResponse(content={"detail": "Arrival already has max amount of buddies"}, status_code=400)
 
 
 @teamleader_router.get("/buddies",
