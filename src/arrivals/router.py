@@ -154,7 +154,7 @@ async def signup_to_arrival(arrival_id: int, current_user: User = Depends(get_cu
         if await add_buddy(current_user.id, arrival_id, session):
             student_ids = await get_students_ids(arrival_id, session)
             for student_id in student_ids:
-                await create_chat(current_user.id, student_id)
+                await create_chat(current_user.id, student_id, session)
             return JSONResponse(content={"detail": "Buddy has been added to arrival"}, status_code=200)
         return JSONResponse(content={"detail": "Buddy is already in this arrival"}, status_code=400)
     return JSONResponse(content={"detail": "Arrival already has max amount of buddies"}, status_code=400)
