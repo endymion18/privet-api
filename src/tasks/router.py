@@ -30,6 +30,8 @@ async def get_current_user_tasks(current_user: User = Depends(get_current_user),
         stmt = await session.execute(select(ArrivalParticipants.arrival_id)
                                      .where(ArrivalParticipants.participant_email == current_user.email))
         arrival_id = stmt.scalar()
+        if arrival_id is None:
+            return JSONResponse({"error": "not an arrival participant"})
         if result is None:
             await session.execute(insert(Task).values(user_id=user_id, arrival_id=arrival_id))
             await session.commit()
