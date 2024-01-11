@@ -6,6 +6,7 @@ import uuid
 class TaskSchema:
     user_id: uuid.UUID
     email: str
+    fullname: str
     airport_meeting: bool
     motel_checked_in: bool
     money_exchange: bool
@@ -16,6 +17,7 @@ class TaskSchema:
     enrollment_documents: bool
     insurance: bool
     dormitory_documents: bool
+    student_pass: bool
     student_ID: bool
     medical_tests: tuple[bool, datetime.date or None]
     visa_extension: tuple[bool, datetime.date or None]
@@ -27,10 +29,12 @@ class TaskSchema:
             visa_expiration: datetime.datetime,
             last_arrival: datetime.datetime,
             email: str,
+            fullname: str,
 
     ):
         self.user_id = task_info.user_id
         self.email = email
+        self.fullname = fullname
         self.airport_meeting = task_info.airport_meeting
         self.motel_checked_in = task_info.motel_checked_in
         self.money_exchange = task_info.money_exchange
@@ -41,6 +45,7 @@ class TaskSchema:
         self.enrollment_documents = task_info.enrollment_documents
         self.insurance = task_info.insurance
         self.dormitory_documents = task_info.dormitory_documents
+        self.student_pass = task_info.student_pass
         self.student_ID = task_info.student_ID
         if visa_expiration is not None:
             visa_extension_deadline = datetime.datetime.fromtimestamp(
