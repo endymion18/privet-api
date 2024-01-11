@@ -76,6 +76,7 @@ async def update_user_info(user_info: ChangeUserInfo,
         await session.execute(update(table).where(table.user_id == current_user.id).values(
             full_name=info.full_name,
             citizenship=info.citizenship,
+            sex=info.sex,
             birthdate=info.birthdate,
             native_language=info.native_language,
             university=info.university
@@ -84,6 +85,7 @@ async def update_user_info(user_info: ChangeUserInfo,
         await session.execute(update(table).where(table.user_id == current_user.id).values(
             full_name=info.full_name,
             city=info.city,
+            sex=info.sex,
             birthdate=info.birthdate,
             native_language=info.native_language,
             university=info.university
