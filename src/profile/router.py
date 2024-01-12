@@ -1,9 +1,11 @@
+import os
 import uuid
+from pathlib import Path
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, FileResponse
 
 from src.auth.models import User
 from src.auth.router import get_user_by_email
@@ -91,3 +93,19 @@ async def change_user_profile_info(user_info: ChangeUserInfo,
                                    current_user: User = Depends(get_current_user),
                                    session: AsyncSession = Depends(get_async_session)):
     return await update_user_info(user_info, current_user, session)
+
+
+@profile_router.post("/users/me/profile/avatar/upload",
+                     status_code=status.HTTP_200_OK
+                     )
+async def change_user_avatar(avatar: UploadFile = File(...), current_user: User = Depends(get_current_user),
+                             session: AsyncSession = Depends(get_async_session)):
+
+    pass
+
+
+@profile_router.get("/images/{path}")
+async def get_image(path: str):
+    parent_dir_path = os.path.dirname(__file__)
+    img_path = Path("Python/privet-api/avatars/44423234234.jpg")
+    return parent_dir_path
