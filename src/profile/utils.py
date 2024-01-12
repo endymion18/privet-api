@@ -151,7 +151,7 @@ async def get_user_by_uuid(user_id: uuid.UUID, session: AsyncSession):
 
 
 async def change_avatar(user_id: uuid.UUID, file: File, session: AsyncSession):
-    os.chdir("..")
+    os.chdir(".")
     ext = os.path.splitext(file.filename)[1]
     filename = f'{user_id}' + ext
     path = f'avatars/{filename}'
