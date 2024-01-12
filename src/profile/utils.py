@@ -151,9 +151,10 @@ async def get_user_by_uuid(user_id: uuid.UUID, session: AsyncSession):
 
 
 async def change_avatar(user_id: uuid.UUID, file: File, session: AsyncSession):
+    os.chdir("..")
     ext = os.path.splitext(file.filename)[1]
     filename = f'{user_id}' + ext
-    path = f'../avatars/{filename}'
+    path = f'avatars/{filename}'
     content_type = file.content_type
     if content_type not in ["image/jpeg", "image/png", "image/jpg"]:
         return None
@@ -162,7 +163,7 @@ async def change_avatar(user_id: uuid.UUID, file: File, session: AsyncSession):
     user_profile = await get_user_profile(user, session)
 
     if user_profile["profile_info"].photo_filepath is not None:
-        db_path = f'../avatars/{user_profile["profile_info"].photo_filepath}'
+        db_path = f'avatars/{user_profile["profile_info"].photo_filepath}'
         os.replace(db_path, path)
 
     if user.role_id == 1:
