@@ -1,3 +1,4 @@
+import os
 import uuid
 from pathlib import Path
 
@@ -17,6 +18,8 @@ from src.profile.utils import get_user_profile, get_languages, update_user_info,
 profile_router = APIRouter(
     tags=["Profiles"],
 )
+
+server_ip = os.environ.get("SERVER_IP")
 
 
 @profile_router.get("/languages",
@@ -102,7 +105,7 @@ async def change_user_avatar(avatar: UploadFile = File(...), current_user: User 
     path = await change_avatar(current_user.id, avatar, session)
     if path is None:
         return JSONResponse(content={"detail": "Wrong file extension"}, status_code=status.HTTP_400_BAD_REQUEST)
-    url = f"http://localhost:8000/images/{path}"
+    url = f"http://{server_ip}:8000/images/{path}"
     return {"url": url}
 
 
@@ -113,9 +116,9 @@ async def get_user_avatar(current_user: User = Depends(get_current_user),
                           session: AsyncSession = Depends(get_async_session)):
     path = await get_avatar_path(current_user.id, session)
     if path is None:
-        url = f"http://localhost:8000/images/default.jpg"
+        url = f"http://{server_ip}:8000/images/default.jpg"
     else:
-        url = f"http://localhost:8000/images/{path}"
+        url = f"http://{server_ip}:8000/images/{path}"
 
     return {"url": url}
 
