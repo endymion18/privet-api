@@ -127,4 +127,4 @@ async def get_user_avatar(current_user: User = Depends(get_current_user),
 async def get_image(path: str):
     os.chdir(".")
     img_path = Path(f"avatars/{path}")
-    return os.listdir()
+    return FileResponse(img_path)
