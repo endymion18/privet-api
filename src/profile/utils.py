@@ -1,4 +1,7 @@
+import os
 import uuid
+
+from fastapi import File
 
 from sqlalchemy import select, insert, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -141,8 +144,43 @@ async def get_country_by_id(country_id: int, session: AsyncSession):
 
 async def get_user_by_uuid(user_id: uuid.UUID, session: AsyncSession):
     user = await session.execute(select(User).where(User.id == user_id))
-    print(user)
     user = user.scalar()
     if user is not None:
         return user
     return None
+
+
+async def change_avatar(user_id: uuid.UUID, file: File, session: AsyncSession):
+    ext = os.path.splitext(file.filename)[1]
+    filename = f'{user_id}' + ext
+    path = f'../avatars/{filename}'
+    content_type = file.content_type
+    if content_type not in ["image/jpeg", "image/png", "image/jpg"]:
+        return None
+
+    user = await get_user_by_uuid(user_id, session)
+    user_profile = await get_user_profile(user, session)
+
+    if user_profile["profile_info"].photo_filepath is not None:
+        db_path = f'../avatars/{user_profile["profile_info"].photo_filepath}'
+        os.replace(db_path, path)
+
+    if user.role_id == 1:
+        await session.execute(update(Student).where(Student.user_id == user_id).values(photo_filepath=filename))
+    else:
+        await session.execute(update(Buddy).where(Buddy.user_id == user_id).values(photo_filepath=filename))
+    await session.commit()
+
+    with open(path, "wb") as uploaded_file:
+        file_content = await file.read()
+        uploaded_file.write(file_content)
+        uploaded_file.close()
+
+    return filename
+
+
+async def get_avatar_path(user_id: uuid.UUID, session: AsyncSession):
+    user = await get_user_by_uuid(user_id, session)
+    user_profile = await get_user_profile(user, session)
+
+    return user_profile["profile_info"].photo_filepath
