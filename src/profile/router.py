@@ -125,6 +125,6 @@ async def get_user_avatar(current_user: User = Depends(get_current_user),
 
 @profile_router.get("/images/{path}")
 async def get_image(path: str):
-    os.chdir(".")
+    os.chdir("..")
     img_path = Path(f"avatars/{path}")
-    return os.curdir
+    return os.listdir()
