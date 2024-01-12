@@ -1,4 +1,3 @@
-import os
 import uuid
 from pathlib import Path
 
@@ -13,7 +12,7 @@ from src.auth.utils import get_current_user
 from src.database import get_async_session
 from src.profile.schemas import ChangeUserInfo
 from src.profile.utils import get_user_profile, get_languages, update_user_info, get_countries, get_language, \
-    get_languages_by_id, get_country_by_id, get_user_by_uuid
+    get_languages_by_id, get_country_by_id, get_user_by_uuid, change_avatar, get_avatar_path
 
 profile_router = APIRouter(
     tags=["Profiles"],
@@ -100,12 +99,28 @@ async def change_user_profile_info(user_info: ChangeUserInfo,
                      )
 async def change_user_avatar(avatar: UploadFile = File(...), current_user: User = Depends(get_current_user),
                              session: AsyncSession = Depends(get_async_session)):
+    path = await change_avatar(current_user.id, avatar, session)
+    if path is None:
+        return JSONResponse(content={"detail": "Wrong file extension"}, status_code=status.HTTP_400_BAD_REQUEST)
+    url = f"http://localhost:8000/images/{path}"
+    return {"url": url}
 
-    pass
+
+@profile_router.get("/users/me/profile/avatar",
+                    status_code=status.HTTP_200_OK
+                    )
+async def get_user_avatar(current_user: User = Depends(get_current_user),
+                          session: AsyncSession = Depends(get_async_session)):
+    path = await get_avatar_path(current_user.id, session)
+    if path is None:
+        url = f"http://localhost:8000/images/default.jpg"
+    else:
+        url = f"http://localhost:8000/images/{path}"
+
+    return {"url": url}
 
 
 @profile_router.get("/images/{path}")
 async def get_image(path: str):
-    parent_dir_path = os.path.dirname(__file__)
-    img_path = Path("Python/privet-api/avatars/44423234234.jpg")
-    return parent_dir_path
+    img_path = Path(f"../avatars/{path}")
+    return FileResponse(img_path)
