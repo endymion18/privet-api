@@ -80,7 +80,7 @@ async def send_email(email_to: str, code: str):
     msg['From'] = email_from
     msg['To'] = email_to
 
-    with open('../src/auth/message.html') as html:
+    with open('./src/auth/message.html') as html:
         text = html.read()
     text = text.replace('000000', code)
     text = text.replace('zaglushka@gmail.com', email_to)
