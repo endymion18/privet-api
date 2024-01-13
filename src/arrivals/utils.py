@@ -255,3 +255,33 @@ async def delete_chat(first_user: uuid.UUID, second_user: uuid.UUID, session: As
         await session.execute(delete(Chat).where(Chat.id == chat.id))
 
     await session.commit()
+
+
+async def check_active_arrival(buddy_id: uuid.UUID, session: AsyncSession):
+    buddy_profile = await session.execute(select(Buddy).where(Buddy.user_id == buddy_id))
+    buddy_profile = buddy_profile.scalar()
+
+    if buddy_profile.last_arrival is None:
+        return True
+
+    arrival_date = await session.execute(select(Arrival.arrival_date).where(Arrival.id == buddy_profile.last_arrival))
+    arrival_date = arrival_date.scalar()
+
+    if arrival_date < datetime.datetime.utcnow().astimezone():
+        return True
+
+    return False
+
+
+async def add_last_arrival_to_buddy(buddy_id: uuid.UUID, arrival_id: int, session: AsyncSession):
+    await session.execute(update(Buddy).where(Buddy.user_id == buddy_id).values(
+        last_arrival=arrival_id
+    ))
+    await session.commit()
+
+
+async def delete_last_arrival_from_buddy(buddy_id: uuid.UUID, session: AsyncSession):
+    await session.execute(update(Buddy).where(Buddy.user_id == buddy_id).values(
+        last_arrival=None
+    ))
+    await session.commit()

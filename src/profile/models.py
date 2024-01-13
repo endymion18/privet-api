@@ -43,6 +43,8 @@ class Buddy(Base):
     native_language: Mapped[int] = mapped_column(ForeignKey("language.id"), nullable=True)
     buddy_status: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    last_arrival: Mapped[int] = mapped_column(ForeignKey("arrival.id"), nullable=True)
+
 
 class Country(Base):
     __tablename__ = "country"
