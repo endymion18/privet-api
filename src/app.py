@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.auth.router import auth_router, verify_router
+from src.students.router import students_router
 from src.university.router import university_router
 from src.profile.router import profile_router
 from src.arrivals.router import arrival_router, teamleader_router
@@ -34,3 +35,4 @@ app.include_router(teamleader_router)
 app.include_router(tasks_router)
 app.include_router(messages_router)
 app.include_router(admin_router)
+app.include_router(students_router)

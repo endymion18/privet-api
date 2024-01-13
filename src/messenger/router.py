@@ -15,7 +15,7 @@ from src.messenger.schemas import GetChatSchema
 from src.profile.models import Student, Buddy
 
 messages_router = APIRouter(
-    tags=["messages"]
+    tags=["Messages"]
 )
 
 

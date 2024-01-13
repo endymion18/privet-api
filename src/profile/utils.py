@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.models import User
 from src.profile.models import Student, Buddy, Contacts, Language, LanguagesRelationship, Country
-from src.profile.schemas import BuddyProfile, StudentProfile, ContactSchema, ChangeUserInfo
+from src.profile.schemas import BuddyProfile, StudentProfile, ContactSchema, ChangeUserInfo, ChangeStudent
 
 
 async def get_user_profile(current_user: User, session: AsyncSession):
@@ -110,6 +110,21 @@ async def update_user_info(user_info: ChangeUserInfo,
     await session.commit()
 
     return await get_user_profile(current_user, session)
+
+
+async def update_student_info(student_id: uuid.UUID, student_info: ChangeStudent, session: AsyncSession):
+    await session.execute(update(Student).where(Student.user_id == student_id).values(
+        institute=student_info.institute,
+        study_program=student_info.study_program,
+        arrival_date=student_info.arrival_date,
+        accommodation=student_info.accommodation,
+        comment=student_info.comment,
+    ))
+    await session.commit()
+
+    student = await session.execute(select(Student).where(Student.user_id == student_id))
+
+    return student.scalar()
 
 
 async def get_languages(session: AsyncSession):

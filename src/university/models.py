@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Identity, ForeignKey
+from sqlalchemy import Integer, String, Identity
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.database import Base
@@ -11,10 +11,9 @@ class University(Base):
     name: Mapped[str] = mapped_column(String(length=40), nullable=False)
 
 
-class Institute(Base):
+class InstitutesURFU(Base):
     __tablename__ = "institute"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
-    university_id: Mapped[int] = mapped_column(ForeignKey("university.id"))
-    name: Mapped[str] = mapped_column(String(length=40), nullable=False)
+    name: Mapped[str] = mapped_column(String(length=100), nullable=False)
     people_count: Mapped[int] = mapped_column(Integer, default=0)

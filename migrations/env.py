@@ -9,6 +9,7 @@ from src.tasks.models import *
 from src.university.models import *
 from src.arrivals.models import *
 from src.messenger.models import *
+from src.students.models import *
 from src.database import Base
 from src.config import DB_USER, DB_PORT, DB_PASS, DB_HOST, DB_NAME
 

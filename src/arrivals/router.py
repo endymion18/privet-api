@@ -14,6 +14,7 @@ from src.database import get_async_session
 from src.messenger.router import create_chat
 from src.profile.router import get_user_profile_info_by_email
 from src.profile.schemas import BuddyProfile
+from src.students.utils import add_student_to_table, delete_student_from_table
 
 arrival_router = APIRouter(
     tags=["Arrivals"],
@@ -155,6 +156,7 @@ async def signup_to_arrival(arrival_id: int, current_user: User = Depends(get_cu
             student_ids = await get_students_ids(arrival_id, session)
             for student_id in student_ids:
                 await create_chat(current_user.id, student_id, session)
+                await add_student_to_table(current_user.id, arrival_id, student_id, session)
             return JSONResponse(content={"detail": "Buddy has been added to arrival"}, status_code=200)
         return JSONResponse(content={"detail": "Buddy is already in this arrival"}, status_code=400)
     return JSONResponse(content={"detail": "Arrival already has max amount of buddies"}, status_code=400)
@@ -177,6 +179,7 @@ async def add_buddy_to_arrival(data: AddBuddyToArrivalSchema, current_user: User
         student_ids = await get_students_ids(data.arrival_id, session)
         for student_id in student_ids:
             await create_chat(data.buddy_id, student_id, session)
+            await add_student_to_table(current_user.id, data.arrival_id, student_id, session)
         return JSONResponse(content={"detail": "Buddy has been added to arrival"}, status_code=200)
     return JSONResponse(content={"detail": "Buddy is already in this arrival"}, status_code=200)
 
@@ -199,5 +202,6 @@ async def delete_buddy_from_arrival(data: AddBuddyToArrivalSchema, current_user:
         student_ids = await get_students_ids(data.arrival_id, session)
         for student_id in student_ids:
             await delete_chat(data.buddy_id, student_id, session)
+            await delete_student_from_table(data.buddy_id, student_id, session)
         return JSONResponse(content={"detail": "Buddy has been deleted from arrival"}, status_code=200)
-    return JSONResponse(content={"detail": "This buddy do not belong to this arrival"}, status_code=200)
+    return JSONResponse(content={"detail": "This buddy do not belong to this arrival"}, status_code=400)

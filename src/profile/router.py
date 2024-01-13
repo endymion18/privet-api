@@ -11,9 +11,9 @@ from src.auth.models import User
 from src.auth.router import get_user_by_email
 from src.auth.utils import get_current_user
 from src.database import get_async_session
-from src.profile.schemas import ChangeUserInfo
+from src.profile.schemas import ChangeUserInfo, ChangeStudent
 from src.profile.utils import get_user_profile, get_languages, update_user_info, get_countries, get_language, \
-    get_languages_by_id, get_country_by_id, get_user_by_uuid, change_avatar, get_avatar_path
+    get_languages_by_id, get_country_by_id, get_user_by_uuid, change_avatar, get_avatar_path, update_student_info
 
 profile_router = APIRouter(
     tags=["Profiles"],
@@ -54,7 +54,7 @@ async def get_all_countries(session: AsyncSession = Depends(get_async_session)):
 @profile_router.get("/countries/{country_id}",
                     status_code=status.HTTP_200_OK
                     )
-async def get_all_countries(country_id: int, session: AsyncSession = Depends(get_async_session)):
+async def get_country_by_id(country_id: int, session: AsyncSession = Depends(get_async_session)):
     return await get_country_by_id(country_id, session)
 
 
@@ -88,6 +88,20 @@ async def get_user_profile_info_by_id(user_id: uuid.UUID,
     return await get_user_profile(user, session)
 
 
+@profile_router.get("/users/by-id/{user_id}/avatar",
+                    status_code=status.HTTP_200_OK
+                    )
+async def get_user_avatar_by_id(user_id: uuid.UUID,
+                                session: AsyncSession = Depends(get_async_session)):
+    path = await get_avatar_path(user_id, session)
+    if path is None:
+        url = f"http://{server_ip}:8000/images/avatars/default.jpg"
+    else:
+        url = f"http://{server_ip}:8000/images/avatars/{path}"
+
+    return url
+
+
 @profile_router.post("/users/me/profile/change",
                      status_code=status.HTTP_200_OK
                      )
@@ -95,6 +109,22 @@ async def change_user_profile_info(user_info: ChangeUserInfo,
                                    current_user: User = Depends(get_current_user),
                                    session: AsyncSession = Depends(get_async_session)):
     return await update_user_info(user_info, current_user, session)
+
+
+@profile_router.post("/users/{student_id}/profile/change",
+                     status_code=status.HTTP_200_OK
+                     )
+async def change_student_profile_info(student_id: uuid.UUID, user_info: ChangeStudent,
+                                      current_user: User = Depends(get_current_user),
+                                      session: AsyncSession = Depends(get_async_session)):
+    if user_info.institute == 0:
+        return JSONResponse(content={"detail": "Wrong institute id"}, status_code=status.HTTP_400_BAD_REQUEST)
+    if len(user_info.accommodation) > 200:
+        return JSONResponse(content={"detail": "Accommodation line too long"}, status_code=status.HTTP_400_BAD_REQUEST)
+    if len(user_info.comment) > 300:
+        return JSONResponse(content={"detail": "Comment line too long"}, status_code=status.HTTP_400_BAD_REQUEST)
+
+    return await update_student_info(student_id, user_info, session)
 
 
 @profile_router.post("/users/me/profile/avatar/upload",
@@ -105,7 +135,7 @@ async def change_user_avatar(avatar: UploadFile = File(...), current_user: User 
     path = await change_avatar(current_user.id, avatar, session)
     if path is None:
         return JSONResponse(content={"detail": "Wrong file extension"}, status_code=status.HTTP_400_BAD_REQUEST)
-    url = f"http://{server_ip}:8000/images/{path}"
+    url = f"http://{server_ip}:8000/images/avatars/{path}"
     return {"url": url}
 
 
@@ -116,15 +146,15 @@ async def get_user_avatar(current_user: User = Depends(get_current_user),
                           session: AsyncSession = Depends(get_async_session)):
     path = await get_avatar_path(current_user.id, session)
     if path is None:
-        url = f"http://{server_ip}:8000/images/default.jpg"
+        url = f"http://{server_ip}:8000/images/avatars/default.jpg"
     else:
-        url = f"http://{server_ip}:8000/images/{path}"
+        url = f"http://{server_ip}:8000/images/avatars/{path}"
 
     return {"url": url}
 
 
-@profile_router.get("/images/{path}")
-async def get_image(path: str):
+@profile_router.get("/images/avatars/{path}")
+async def get_avatar(path: str):
     os.chdir(".")
     img_path = Path(f"avatars/{path}")
     return FileResponse(img_path)

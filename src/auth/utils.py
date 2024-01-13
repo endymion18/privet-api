@@ -74,13 +74,17 @@ async def generate_confirmation_token() -> str:
     return result_str
 
 
-async def send_email(email_to: str, text: str):
+async def send_email(email_to: str, code: str):
     msg = EmailMessage()
     msg['Subject'] = 'Mail confirmation'
     msg['From'] = email_from
     msg['To'] = email_to
 
-    msg.set_content(text)
+    with open('../src/auth/message.html') as html:
+        text = html.read()
+    text = text.replace('000000', code)
+    text = text.replace('zaglushka@gmail.com', email_to)
+    msg.set_content(text, subtype='html')
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
         server.login(email_from, email_password)

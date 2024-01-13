@@ -17,7 +17,7 @@ class StudentProfile:
     birthdate: datetime.date
     native_language: str
     escort_paid: bool
-    institute: str
+    institute: int
     study_program: str
     arrival_date: datetime.date
     visa_expiration: datetime.date
@@ -101,3 +101,12 @@ class ChangeUserInfo(BaseModel):
     native_language: Optional[int]
     other_languages_ids: list[int]
     university: Optional[int]
+
+
+class ChangeStudent(BaseModel):
+    institute: Optional[int]
+    study_program: Optional[str]
+    arrival_date: Optional[datetime.datetime]
+    visa_expiration: Optional[datetime.date]
+    accommodation: Optional[str]
+    comment: Optional[str]
