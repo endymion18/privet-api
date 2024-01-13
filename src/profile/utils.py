@@ -116,6 +116,7 @@ async def update_student_info(student_id: uuid.UUID, student_info: ChangeStudent
     await session.execute(update(Student).where(Student.user_id == student_id).values(
         institute=student_info.institute,
         study_program=student_info.study_program,
+        visa_expiration=student_info.visa_expiration,
         arrival_date=student_info.arrival_date,
         accommodation=student_info.accommodation,
         comment=student_info.comment,
