@@ -15,7 +15,7 @@ admin_router = APIRouter(
 )
 
 
-templates = Jinja2Templates(directory="./admin/templates")
+templates = Jinja2Templates(directory="./src/admin/templates")
 
 
 @admin_router.post('/admin/role/change',
