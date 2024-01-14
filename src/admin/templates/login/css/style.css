@@ -1,0 +1,66 @@
+.no-margin {
+    margin: 15px 0;
+
+}
+
+.function-body {
+    box-sizing: border-box;
+}
+
+.function-block {
+    width: auto;
+}
+
+.function {
+    margin-bottom: 15px;
+}
+
+.function-description {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    align-items: center;
+    border-color: #3b71ca;
+    color: #3b71ca;
+    background-color: white;
+
+}
+
+.section-tab {
+    background-color: #3b71ca;
+    color: white;
+    padding: 10px;
+    margin: 5px 0;
+}
+
+.function-body {
+    width: auto;
+    border: #3b71ca 2px solid;
+    border-top: 0;
+}
+
+.function-section form {
+    padding: 10px;
+}
+
+input {
+    height: 1.6em;
+    border: #3b71ca 1px solid;
+}
+
+form {
+    margin-right: 450px;
+}
+
+.input-group-prepend {
+    background-color: #3b71ca;
+}
+
+.input-group-text {
+    color: white;
+    min-width: 150px;
+}
+.section-result {
+    min-height: 50px;
+}
