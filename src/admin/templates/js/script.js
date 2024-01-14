@@ -96,9 +96,15 @@ function createForm(request, parent) {
 
 }
 
+if (localStorage.getItem("token") == null)
+{
+        window.location.replace(host + '/admin/login/');
+}
+
 window.onload = function() {
     const funcBlocks = document.querySelectorAll(".function-block");
     const logoutButton = document.querySelector('a.dropdown-item');
+
     logoutButton.onclick = (e) =>
     {
         localStorage.clear();
