@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.models import User
 from src.profile.models import Student, Buddy, Contacts, Language, LanguagesRelationship, Country
 from src.profile.schemas import BuddyProfile, StudentProfile, ContactSchema, ChangeUserInfo, ChangeStudent
+from src.students.models import StudentsRelationship
 
 
 async def get_user_profile(current_user: User, session: AsyncSession):
@@ -184,6 +185,12 @@ async def change_avatar(user_id: uuid.UUID, file: File, session: AsyncSession):
 
     if user.role_id == 1:
         await session.execute(update(Student).where(Student.user_id == user_id).values(photo_filepath=filename))
+        student_relationship = await session.execute(
+            select(StudentsRelationship).where(StudentsRelationship.student_id == user_id))
+        student_relationship = student_relationship.scalars().all()
+        if len(student_relationship) != 0:
+            await session.execute(update(StudentsRelationship).where(StudentsRelationship.student_id == user_id).values(
+                student_photo=filename))
     else:
         await session.execute(update(Buddy).where(Buddy.user_id == user_id).values(photo_filepath=filename))
     await session.commit()

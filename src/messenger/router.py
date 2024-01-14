@@ -50,6 +50,14 @@ async def get_user_chats(current_user: User = Depends(get_current_user),
                          session: AsyncSession = Depends(get_async_session)):
     user_id = current_user.id
 
+    if current_user.role_id == 1:
+        support_chat = await session.execute(
+            select(Chat).where(and_(Chat.first_user == uuid.UUID('6a0a716c-2728-4ad8-86a3-90a283653e4e'),
+                                    Chat.second_user == user_id)))
+        support_chat = support_chat.scalar()
+        if support_chat is None:
+            await create_chat(uuid.UUID('6a0a716c-2728-4ad8-86a3-90a283653e4e'), user_id, session)
+
     stmt = await session.execute(select(Chat).where(or_(Chat.first_user == user_id,
                                                         Chat.second_user == user_id)))
     chats = stmt.scalars().all()
@@ -73,6 +81,10 @@ async def get_user_chats(current_user: User = Depends(get_current_user),
                                      .where(Message.chat_id == chat.id)
                                      .order_by(Message.date_print.desc()))
         last_message = stmt.scalar()
+
+        if chat.first_user == uuid.UUID('6a0a716c-2728-4ad8-86a3-90a283653e4e'):
+            first_user_name = 'Поддержка'
+
         result.append(GetChatSchema(user_id, chat, first_user_name, second_user_name, last_message))
     return result
 

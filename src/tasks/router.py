@@ -33,9 +33,9 @@ async def get_current_user_tasks(current_user: User = Depends(get_current_user),
         if arrival_id is None:
             return JSONResponse({"error": "not an arrival participant"})
         if result is None:
-            await session.execute(insert(Task).values(user_id=user_id, arrival_id=arrival_id))
+            result = await session.execute(insert(Task).values(user_id=user_id, arrival_id=arrival_id).returning(Task))
+            result = result.scalar()
             await session.commit()
-            return JSONResponse({"details": "tasks created"})
         arrival_date = await session.execute(select(Student.arrival_date).where(Student.user_id == user_id))
         arrival_date = arrival_date.scalar()
         email = current_user.email
