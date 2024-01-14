@@ -1,5 +1,5 @@
 const submitButton = document.querySelector('.btn-primary');
-const host = "http://localhost:8000";
+const host = "http://79.174.94.7:8000";
 console.log(host);
 
 submitButton.onclick = async(e) =>
