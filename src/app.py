@@ -41,5 +41,5 @@ app.include_router(messages_router)
 app.include_router(admin_router)
 app.include_router(students_router)
 
-app.mount("/admin/", StaticFiles(directory="./admin/templates/", html=True))
+app.mount("/admin/", StaticFiles(directory="./src/admin/templates/", html=True))
 app.include_router(students_router)
