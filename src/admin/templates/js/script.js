@@ -1,4 +1,4 @@
-const host = "http://localhost:8000";
+const host = "http://79.174.94.7:8000";
 
 function createInput(parent, text, inputId)
 {
